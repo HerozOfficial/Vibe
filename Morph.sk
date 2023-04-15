@@ -1,0 +1,237 @@
+command /morph <text>:
+	trigger:
+		if "%event-player%" is "HerozKun":
+			set {ability::%event-player%} to 0
+			make event-player execute command "/nametag hide"
+			spawn ("%arg-1%" parsed as entitytype) at event-player's location
+			set {morph::%event-player%} to last spawned entity
+			apply invisibility 2 without any particles to event-player for 9999 seconds 
+			set {morphname::%event-player%} to "%arg-1%"
+			add last spawned entity to {morphs::*}
+			add {morph::%event-player%} to {morhps::*}
+			send "&6> Successfully morphed into a %arg-1%" to event-player
+			set max health of {morph::%event-player%} to 1
+			send "&3> Left click for ability, right click for regular attack" to event-player
+			if arg-1 is "ghast":
+				set event-player's flight mode to true
+			if arg-1 is "blaze":
+				set event-player's flight mode to true
+			if arg-1 is "bat":
+				set event-player's flight mode to true
+			if arg-1 is "phantom":
+				set event-player's flight mode to true
+				set the player's fly speed to 0.1
+			if arg-1 is "bee":
+				set event-player's flight mode to true
+			loop all entities:
+				tame {morph::%event-player%} to loop-entity
+			while {morph::%event-player%} is alive:
+				feed event-player
+				wait 1 ticks
+				teleport {morph::%event-player%} to event-player
+				set yaw of {morph::%event-player%} to event-player's yaw
+				if {ability::%event-player%} is 1:
+					push event-player (vector of block at block 2 above event-player's head -- vector of event-player) at speed 0.2
+					wait 1 ticks
+		else:
+			if "%event-player%" is "Ojeja":
+				spawn ("%arg-1%" parsed as entitytype) at event-player's location
+				set {morph::%event-player%} to last spawned entity
+				apply invisibility 2 without any particles to event-player for 9999 seconds 
+				set {morphname::%event-player%} to "%arg-1%"
+				add last spawned entity to {morphs::*}
+				add {morph::%event-player%} to {morhps::*}
+				send "&6> Successfully morphed into a %arg-1%" to event-player
+				set max health of {morph::%event-player%} to 1
+				send "&3> Left click for ability, right click for regular attack" to event-player
+				if arg-1 is "ghast":
+					set event-player's flight mode to true
+				if arg-1 is "blaze":
+					set event-player's flight mode to true
+				if arg-1 is "bat":
+					set event-player's flight mode to true
+				if arg-1 is "phantom":
+					set event-player's flight mode to true
+					set the player's fly speed to 0.1
+				if arg-1 is "bee":
+					set event-player's flight mode to true
+				loop all entities:
+					tame {morph::%event-player%} to loop-entity
+				while {morph::%event-player%} is alive:
+					feed event-player
+					wait 1 ticks
+					teleport {morph::%event-player%} to event-player
+					set yaw of {morph::%event-player%} to event-player's yaw
+					if {ability::%event-player%} is 1:
+						push event-player (vector of block at block 2 above event-player's head -- vector of event-player) at speed 0.2
+						wait 1 ticks
+				
+on target:
+	if {morhps::*} contains event-entity:
+		cancel event
+	else:
+		if {morph::%event-entity's target%} is set:
+			cancel event
+		
+command /resetmorph:
+	trigger:
+		if "%event-player%" is "HerozKun":
+			make event-player execute command "/nametag show"
+			set event-player's flight mode to false
+			teleport {morph::%event-player%} to location(0, 1000, 0, world)
+			kill {morph::%event-player%}
+			remove invisibility from event-player
+			send "&6> You have unmorphed." to event-player
+			clear {morph::%event-player%}
+				
+on damage:
+	if {morphs::*} contains victim:
+		if damage cause is suffocation:
+			cancel event
+	if {morph::%victim%} is set:
+		cancel event
+		damage {morph::%victim%} by 0.5 hearts
+		if damage cause is not fall:
+			push victim (vector of block at block 3 behind victim's head -- vector of victim) at speed 0.6
+		
+command /forcecoords <player>:
+	trigger:
+		if "%event-player%" is "HerozKun":
+			send "%arg-1%'s coordinates: %block at arg-1's location%" to event-player
+		else:
+			if "%event-player%" is "Ojeja":
+				send "%arg-1%'s coordinates: %block at arg-1's location%" to event-player
+			
+on death:
+	if victim is a player:
+		if attacker is a player:
+			if {morph::%attacker%} is not set:
+				broadcast "%victim% was slain by %attacker%"
+			else:
+				broadcast "%victim% was slain by %{morph::%attacker%}%"
+			
+on right click:
+	if {morph::%event-player%} is set:
+		if the targeted entity is not {morph::%event-player%}:
+			if the targeted entity is alive:
+				if the distance between event-player and the targeted entity is less than 2:
+					if {morph::%event-player%} is not 0:
+						set {_target} to the targeted entity
+						set {tn::%event-player%} to "%target entity%"
+						damage the targeted entity by 0.5 hearts
+						push the targeted entity (vector of block at block 3 infront of event-player's head -- vector of the targeted entity) at speed 0.6
+						wait 2 ticks
+						if {_target} is not alive:
+							broadcast "%{tn::%event-player%}% was slain by %{morphname::%event-player%}%"
+		if "%{morph::%event-player%}%" is "creeper":
+			start explosion of {morph::%event-player%}
+			wait 1.4 seconds
+			teleport {morph::%event-player%} to location(0, 1000, 0, world)
+			create an explosion of force 2 at event-player
+			kill {morph::%event-player%}
+			set {morph::%event-player%} to "air"
+			
+every 1 seconds:
+	loop all players:
+		if loop-player's health is less than 3:
+			set {_hp} to loop-player's health
+			set {_hp} to round({_hp})
+			set loop-player's tablist name to "&f%loop-player% &4%{_hp}%❤"
+		else:
+			if loop-player's health is less than 6:
+				set {_hp} to loop-player's health
+				set {_hp} to round({_hp})
+				set loop-player's tablist name to "&f%loop-player% &6%{_hp}%❤"
+			else:
+				if loop-player's health is less than 9:
+					set {_hp} to loop-player's health
+					set {_hp} to round({_hp})
+					set loop-player's tablist name to "&f%loop-player% &e%{_hp}%❤"
+				else:
+					set {_hp} to loop-player's health
+					set {_hp} to round({_hp})
+					set loop-player's tablist name to "&f%loop-player% &a%{_hp}%❤"
+				
+on pickup:
+	if {morph::%event-player%} is set:
+		cancel event
+			
+on left click:
+	if {morph::%event-player%} is set:
+		if "%{morph::%event-player%}%" is "skeleton":
+			shoot an arrow from event-player
+		else:
+			if "%{morph::%event-player%}%" is "ghast":
+				play sound "minecraft:entity.ghast.warn" with volume 0.5 to the player
+				wait 0.8 seconds
+				play sound "minecraft:entity.ghast.shoot" with volume 0.5 to the player
+				shoot a fireball from {morph::%event-player%} at speed 0.5
+			else:
+				if "%{morph::%event-player%}%" is "pillager":
+					shoot an arrow from event-player
+				else:
+					if "%{morph::%event-player%}%" is "blaze":
+						play sound "minecraft:entity.blaze.shoot" with volume 50 at the player
+						shoot an fireball from event-player at speed 0.5
+					else:
+						if "%{morph::%event-player%}%" is "spider":
+							if {ability::%event-player%} is 0:
+								set {ability::%event-player%} to 1
+								send "&6> Ablity toggled &eON&6." to event-player
+								wait 1 tick
+							else:
+								if {ability::%event-player%} is 1:
+									set {ability::%event-player%} to 0
+									send "&6> Ablity toggled &eOFF&6." to event-player
+									wait 1 tick
+on pickup:
+	if event-item is arrow:
+		cancel event
+			
+command /hidemorph:
+	trigger:
+		if {morph::%event-player%} is set:
+			teleport {morph::%event-player%} to location(0, 1000, 0, world)
+			kill {morph::%event-player%}
+			set {morph::%event-player%} to "air"
+			send "&6> Your morph is now hidden." to event-player
+			
+on combust:
+	if {morph::%event-player%} is set:
+		cancel event
+		
+on death:
+	loop all players:
+		if victim is {morph::%loop-player%}:
+			set {morph::%loop-player%} to 0
+			
+on damage:
+	if damage cause is attack:
+		if {morph::%attacker%} is set:
+			cancel event
+			
+on damage:
+	loop all players:
+		if victim is {morph::%loop-player%}:
+			if attacker is not loop-player:
+				if attacker is a player:
+					push loop-player (vector of block at block 3 behind loop-player's head -- vector of loop-player) at speed 0.6
+					
+command /thehetarget <player>:
+	trigger:
+		spawn a zombie at block 5 behind arg-1's location
+		set {tt} to last spawned zombie
+		apply fire resistance 2 without any particles to {tt} for 9999 seconds 
+		while {tt} is alive:
+			push {tt} (vector of arg-1's location -- vector of {tt}) at speed 0.6
+			push {tt} (vector of block at block 1 above {tt}'s head -- vector of {tt}) at speed 0.4
+			set {tt}'s target to arg-1
+			wait 0.5 seconds
+			
+on entity un-target:
+	if event-entity is {tt}:
+		cancel event
+						
+on combust:
+	if event-entity is {tt}:
+		cancel event
