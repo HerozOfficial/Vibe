@@ -1,0 +1,626 @@
+on skript load:
+	create vixio bot:
+		enable the guild members intent
+		enable the guild bans intent
+		enable the guild emojis intent
+		enable the guild voice states intent
+		enable the guild messages intent
+		enable the guild message reactions intent
+		enable the message content intent
+		enable the direct messages intent
+		login to "NzY0NTYzODY2NTAyOTU1MDU5.X4IFlg.9ylgS5EUrSrxkpntuY7mKG0ho4k" with name "vibe"
+	
+function hasRole(guild: guild, member: member) :: boolean:
+	set {_id} to discord id of {_guild}
+	set {%script%::currentguild} to {_id}
+	loop {%script%::%{_id}%::permissions::admin::*}:
+		{_member} has role role with id loop-value in {_guild}
+		return true
+	return false
+
+#In testing phase
+discord command vibetestcommand:
+	bots: vibe
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	trigger:
+		if discord id of event-member is "756199673407995935":
+			create command "vibetest" with description "Testing" in event-guild with "vibe"
+			reply to event-message without mention and say "> Test command created"
+
+#In testing phase
+on slash command received:
+	respond to the interaction normally with "test"
+
+discord command botstatus <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if event-member has role named "Admin homie":
+			mark "vibe" as watching "%arg-1%"
+			reply to event-message without mention and say "%mention tag of event-member% %nl% > The bot is now watching %arg-1%"
+
+on bot join guild:
+	set {%script%::%discord id of event-guild%::prefix} to "!"
+
+#mute
+discord command mute <member> <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			if {%script%::%discord id of event-guild%::mutedrole} is set:
+				add role with id "%{%script%::%discord id of event-guild%::mutedrole}%" to roles of arg-1
+				if {%script%::%discord id of event-guild%::mutedpeople::*} does not contain "%discord id of arg-1%":
+					add "%discord id of arg-1%" to {%script%::%discord id of event-guild%::mutedpeople::*}
+				reply to event-message without mention and say "> **%arg-1%** was muted due to **%arg-2%**"
+				if {%script%::%discord id of event-guild%::logs} is set:
+					create embed:
+						set the title of embed to title with text "Staff Command"
+						set the author info of the embed to "Logs"
+						set the colour of the embed to green
+						add split field named "In channel: %event-channel%" with value "%event-member% muted %arg-1% due to ***%arg-2%***" to embed
+						set the thumbnail of embed to "%avatar of event-member%"
+						set the timestamp of embed to now
+					send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+			else:
+				reply to event-message without mention and say "> :x: The muted role is not set, Please do !mutedrole mute"
+
+#unmute
+discord command unmute <member>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			if {%script%::%discord id of event-guild%::mutedrole} is set:
+				remove role with id "%{%script%::%discord id of event-guild%::mutedrole}%" from roles of arg-1
+				if {%script%::%discord id of event-guild%::mutedpeople::*} contains "%discord id of arg-1%":
+					remove "%discord id of arg-1%" from {%script%::%discord id of event-guild%::mutedpeople::*}
+				reply to event-message without mention and say "> **%arg-1%** was unmuted"
+				if {%script%::%discord id of event-guild%::logs} is set:
+					create embed:
+						set the title of embed to title with text "Staff Command"
+						set the author info of the embed to "Logs"
+						set the colour of the embed to green
+						add split field named "In channel: %event-channel%" with value "%event-member% unmuted %arg-1%" to embed
+						set the thumbnail of embed to "%avatar of event-member%"
+						set the timestamp of embed to now
+					send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+			else:
+				reply to event-message without mention and say "> :x: The muted role is not set, Please do !mutedrole mute"
+					
+#Help Staff Command
+discord command help:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			if event-member has permission administrator:
+				create embed:
+					set the title of embed to title with text "Help Menu"
+					set the colour of the embed to green
+					add split field named "Staff Commands" with value "> Mute: mute @user <reason> %nl% > Un-Mute: unmute @user %nl% > Server-Info: serverinfo %nl% > Kick: kick @user <reason> %nl% > Ban: ban @user <reason> %nl% > Unban: unban <user id> %nl% > Purge: purge <amount> %nl% > Slow-Mode: slowmode <seconds> %nl% > Warn: warn @user <reason> %nl% > Checkwarns: checkwarns @user %nl% > Pin: pin This message" to embed
+					add split field named "Owner/Manager Commands" with value "> Add role to the bot permissions: addperms <role id> %nl% > Remove role from the bot permissions: delperms <role id> %nl% > Set the muted role: mutedrole <role id> %nl% > Set the logs channel: logset <channel id> %nl% > Prefix changer: *prefix <prefix> %nl% cbsignup <thetextyou'd usually put with it>: Sets a cb signup message" to embed
+					add split field named "Member commands" with value "> support: Gives vibe support discord link %nl% > Uptime of the bot: uptime %nl% > User-Info: userinfo @user %nl% > avatar @user: Check a user's avatar" to embed
+					set footer of embed to a footer with text "Bot Created by Heroz"
+				send the last created embed to event-member with "vibe"
+			else:
+				create embed:
+					set the title of embed to title with text "Help Menu"
+					set the colour of the embed to green
+					add split field named "Staff Commands" with value "> Mute: mute @user <reason> %nl% > Un-Mute: unmute @user %nl% > Server-Info: serverinfo %nl% > Kick: kick @user <reason> %nl% > Ban: ban @user <reason> %nl% > Unban: unban <user id> %nl% > Purge: purge <amount> %nl% > Slow-Mode: slowmode <seconds> %nl% > Warn: warn @user <reason> %nl% > Checkwarns: checkwarns @user %nl% > Pin: pin This message" to embed
+					add split field named "Member commands" with value "> support: Gives vibe support discord link %nl% > Uptime of the bot: uptime %nl% > User-Info: userinfo @user %nl% > avatar @user: Check a user's avatar" to embed
+					set footer of embed to a footer with text "Bot Created by Heroz"
+				send the last created embed to event-member with "vibe"
+		else:
+			if event-member does not have permission administrator:
+				create embed:
+					set the title of embed to title with text "Help Menu"
+					set the colour of the embed to green
+					add split field named "Member commands" with value "> support: Gives vibe support discord link %nl% > Uptime of the bot: uptime %nl% > User-Info: userinfo @user %nl% > avatar @user: Check a user's avatar %nl% > serverrank: Gives you the server rank link" to embed
+					set footer of embed to a footer with text "Bot Created by Heroz"
+				send the last created embed to event-member with "vibe"
+
+#Prefix changer command
+discord command prefix [<text>]:
+	prefixes: *
+	bots: vibe
+	trigger:
+		if arg-1 is set:
+			if event-member has permission administrator:
+				set {%script%::%discord id of event-guild%::prefix} to arg-1
+				reply to event-message without mention and say "> The server prefix has been set to `%arg-1%`"
+		else:
+			reply to event-message without mention and say "> The prefix is: `%{%script%::%discord id of event-guild%::prefix}%`"
+
+#Support Command
+discord command support:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		create embed:
+			set title of embed to a title with text "Support Server" and url "https://discord.gg/deez_nuts_ha_gottem"
+			set the colour of the embed to green
+			set footer of embed to a footer with text "Bot Created by Heroz"
+		send the last created embed to event-member with "vibe"
+
+#uptime command
+discord command uptime:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		create embed:
+			set the title of embed to title with text "Uptime"
+			set the colour of the embed to green
+			set the description of the embed to ":arrow_forward: Time since last restart: ``%the uptime of event-bot%``"
+		send the last created embed to event-channel with "vibe"
+		
+#UserInfo
+discord command userinfo <member>:
+	aliases: whois
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		create embed:
+			set the title of embed to title with text "%arg-1%"
+			set the thumbnail of embed to "%avatar of arg-1%"
+			set the colour of the embed to green
+			add split field named "Joined" with value "%arg-1's join date%" to embed
+			add split field named "Account Created" with value "%arg-1's discord join date%" to embed
+			add split field named "Roles" with value "%the roles of arg-1%" to embed
+			set footer of embed to a footer with text "Bot Created by Heroz"
+		send the last created embed to event-channel with "vibe"
+
+#ServerInfo
+discord command serverinfo:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			create embed:
+				set the title of embed to title with text "%event-guild%"
+				set the thumbnail of embed to icon of event-guild
+				set the colour of the embed to green
+				add split field named "Owner" with value "%discord owner of event-guild%" to embed
+				add split field named "Discord Creation Date" with value "%discord creation date of event-guild%" to embed
+				add split field named "Channel Categories" with value "%amount of categories of event-guild%" to embed
+				add split field named "Text Channels" with value "%amount of text-channels of event-guild%" to embed
+				add split field named "Voice Channels" with value "%amount of voice-channels of event-guild%" to embed
+			loop discord members of event-guild:
+				add 1 to {_membertemp}
+				add split field named "Members" with value "%{_membertemp}%" to embed
+				add split field named "Roles" with value "%roles of event-guild%" to embed
+				set footer of embed to a footer with text "Bot Created by Heroz"
+			send the last created embed to event-channel with "vibe"
+
+#Kick Command
+discord command kick <user> <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			send "> You have been kicked from **%event-guild%** for **%arg-2%**" to arg-1 with "vibe"
+			wait 1 seconds
+			kick arg-1 from event-guild due to arg-2
+			reply to event-message without mention and say "> %arg-1% has been kicked due to **%arg-2%**"
+			if {%script%::%discord id of event-guild%::logs} is set:
+				create embed:
+					set the title of embed to title with text "Staff Command"
+					set the author info of the embed to "Logs"
+					set the colour of the embed to green
+					add split field named "In channel: %event-channel%" with value "%event-member% kicked %arg-1% due to ***%arg-2%***" to embed
+					set the thumbnail of embed to "%avatar of event-member%"
+					set the timestamp of embed to now
+				send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+
+#Ban Command
+discord command ban <user> <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			send "> You have been banned from **%event-guild%** for **%arg-2%**" to arg-1 with "vibe"
+			ban arg-1 from event-guild due to arg-2
+			reply to event-message without mention and say "> **%arg-1%** has been banned due to **%arg-2%**"
+			if {%script%::%discord id of event-guild%::logs} is set:
+				create embed:
+					set the title of embed to title with text "Staff Command"
+					set the author info of the embed to "Logs"
+					set the colour of the embed to green
+					add split field named "In channel: %event-channel%" with value "%event-member% banned %arg-1% due to ***%arg-2%***" to embed
+					set the thumbnail of embed to "%avatar of event-member%"
+					set the timestamp of embed to now
+				send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+
+#Unban Command
+discord command unban <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			unban arg-1 from event-guild
+			reply to event-message without mention and say "> **%discord name of user with id arg-1%** **has been unbanned!**"
+			if {%script%::%discord id of event-guild%::logs} is set:
+				create embed:
+					set the title of embed to title with text "Staff Command"
+					set the author info of the embed to "Logs"
+					set the colour of the embed to green
+					add split field named "In channel: %event-channel%" with value "%event-member% unbanned %arg-1%" to embed
+					set the thumbnail of embed to "%avatar of event-member%"
+					set the timestamp of embed to now
+				send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+
+#Purge command
+discord command purge <integer>:
+	aliases: clear
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			purge event-message with event-bot
+			grab the last arg-1 messages in event-channel
+			purge the grabbed messages with "vibe"
+			wait 1 seconds
+			reply to event-message without mention and say "> **%arg-1%** messages have been deleted!" and store it in {_purgemessage}
+			purge {_purgemessage} with "vibe"
+			if {%script%::%discord id of event-guild%::logs} is set:
+				create embed:
+					set the title of embed to title with text "Staff Command"
+					set the author info of the embed to "Logs"
+					set the colour of the embed to green
+					add split field named "In channel: %event-channel%" with value "%event-member% purged %arg-1% messages" to embed
+					set the thumbnail of embed to "%avatar of event-member%"
+					set the timestamp of embed to now
+				send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+
+#slowmode
+discord command slowmode <integer>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			set the slowmode of event-channel to arg-1
+			reply to event-message without mention and say "> Slowmode has been set to **%arg-1%**"
+
+#Add roles to bot moderation command
+discord command addperms <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if event-member has permission administrator:
+			if {%script%::%discord id of event-guild%::permissions::admin::*} does not contain arg-1:
+				add arg-1 to {%script%::%discord id of event-guild%::permissions::admin::*}
+				reply to event-message without mention and say "> Added `%discord name of role with id arg-1%` to the list of roles that can access admin bot commands"
+				if {%script%::%discord id of event-guild%::logs} is set:
+					create embed:
+						set the title of embed to title with text "Permission changed"
+						set the author info of the embed to "Logs"
+						set the colour of the embed to green
+						add split field named "In channel: %event-channel%" with value "%event-member% added the role %arg-1% to the bot admin list" to embed
+						set the thumbnail of embed to "%avatar of event-member%"
+						set the timestamp of embed to now
+					send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+			else:
+				reply to event-message without mention and say "> `%discord name of role with id arg-1%` is already on the list of roles that can access admin bot commands"
+
+#Remove roles from bot moderation command
+discord command delperms <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if event-member has permission administrator:
+			if {%script%::%discord id of event-guild%::permissions::admin::*} contains arg-1:
+				remove arg-1 from {%script%::%discord id of event-guild%::permissions::admin::*}
+				reply to event-message without mention and say "> Removed `%discord name of role with id arg-1%` from the list of roles that can access admin bot commands"
+				if {%script%::%discord id of event-guild%::logs} is set:
+					create embed:
+						set the title of embed to title with text "Permission changed"
+						set the author info of the embed to "Logs"
+						set the colour of the embed to green
+						add split field named "In channel: %event-channel%" with value "%event-member% removed the role %arg-1% from the bot admin list" to embed
+						set the thumbnail of embed to "%avatar of event-member%"
+						set the timestamp of embed to now
+					send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+			else:
+				reply to event-message without mention and say "> `%discord name of role with id arg-1%` is not on the list of roles that can access admin bot commands"
+
+#Set the muted role
+discord command mutedrole <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if event-member has permission administrator:
+			set {%script%::%discord id of event-guild%::mutedrole} to arg-1
+			set {_role} to role with id arg-1
+			reply to event-message without mention and say "> The muted role has been set to %mention tag of {_role}%"
+
+#Warn command
+discord command warn <user> <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			send "> You have been warned in **%event-guild%** for **%arg-2%**" to arg-1 with "vibe"
+			add "%now% - %arg-2% (Punished:%mention tag of arg-1%/%arg-1%) (By:%mention tag of event-member%/%event-member%)" to {%script%::%discord id of event-guild%::warns::*}
+			reply to event-message without mention and say "> %arg-1% has been warned for %arg-2%"
+			if {%script%::%discord id of event-guild%::logs} is set:
+				create embed:
+					set the title of embed to title with text "User Warned"
+					set the author info of the embed to "Logs"
+					set the colour of the embed to green
+					add split field named "In channel: %event-channel%" with value "%arg-1% was warned by %event-member%/%mention tag of event-member% for %arg-2%" to embed
+					set the thumbnail of embed to "%avatar of event-member%"
+					set the timestamp of embed to now
+				send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+		
+#Checkwarns command
+discord command checkwarns <user>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			set {_warnpaste::*} to a message builder
+			loop {%script%::%discord id of event-guild%::warns::*}:
+				if loop-value contains "Punished:%mention tag of arg-1%":
+					append line "%loop-value%"
+			reply to event-message without mention and say "```%{_warnpaste::*}%```"
+			
+#Checkwarns command
+discord command clearwarns <user>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if hasRole(event-guild, event-member) is true:
+			loop {%script%::%discord id of event-guild%::warns::*}:
+				if loop-value contains mention tag of arg-1:
+					remove loop-value from {%script%::%discord id of event-guild%::warns::*}
+			reply to event-message without mention and say "> **%arg-1%'s** warns have been cleagreen"
+
+#Avatar command
+discord command avatar <user>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	aliases: av
+	bots: vibe
+	trigger:
+		create embed:
+			set the colour of the embed to green
+			set the title of embed to title with text "%arg-1%'s Avatar :ok_hand:"
+			set the image of embed to "%avatar of arg-1%"
+		reply to event-message without mention and say the last created embed
+
+#Set the logs channel command
+discord command logset <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		if event-member has permission administrator:
+			set {%script%::%discord id of event-guild%::logs} to arg-1
+			reply to event-message without mention and say "> The logs channel has been set to %mention tag of channel with id arg-1%"
+			
+on member join guild seen by "vibe":
+	create embed:
+		set the title of embed to title with text "Member Joined the Server"
+		set the author info of the embed to "Logs"
+		set the colour of the embed to green
+		add split field named "Joined:" with value "%event-member%/%mention tag of event-member%" to embed
+		set the thumbnail of embed to "%avatar of event-member%"
+		set the timestamp of embed to now
+	send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+	
+on member leave guild seen by "vibe":
+	create embed:
+		set the title of embed to title with text "Member Left the Server"
+		set the author info of the embed to "Logs"
+		set the colour of the embed to green
+		add split field named "Left:" with value "%event-member%/%mention tag of event-member%" to embed
+		set the thumbnail of embed to "%avatar of event-member%"
+		set the timestamp of embed to now
+	send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+
+on message deleted seen by "vibe":
+	wait 1 seconds
+	if "%event-message%" is not "<none>":
+		if "%discord id of the discord author of event-message%" is not "764563866502955059":
+			if {%script%::%discord id of event-guild%::logs} is set:
+				create embed:
+					set the title of embed to title with text "Message deleted"
+					set the author info of the embed to "Logs"
+					set the colour of the embed to green
+					add split field named "In channel: %event-channel%" with value "Sent by: %the discord author of event-message% %nl% %nl% %event-message%" to embed
+					set the thumbnail of embed to "%avatar of event-bot%"
+					set the timestamp of embed to now
+				send the last created embed to channel with id {%script%::%discord id of event-guild%::logs} with "vibe"
+		
+discord command servers:
+    prefixes: *
+    bots: vibe
+    trigger:
+        reply to event-message without mention and say "%guilds of event-bot%"
+        
+on reaction add:
+	if discord id of event-member is not "764563866502955059":
+		if the discord id of event-channel is {%script%::%discord id of event-guild%::reactionid}:
+			if the discord name of event-emote is "fist":
+				set {_r} to role named "Smashers" in event-guild
+				add {_r} to roles of event-member in event-guild
+				send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+				wait 5 seconds
+				purge {_msg} with "vibe"
+			else:
+				if the discord name of event-emote is "gun":
+					set {_r} to role named "Apex Legends" in event-guild
+					add {_r} to roles of event-member in event-guild
+					send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+					wait 5 seconds
+					purge {_msg} with "vibe"
+				else:
+					if the discord name of event-emote is "pick":
+						set {_r} to role named "Minecrafters" in event-guild
+						add {_r} to roles of event-member in event-guild
+						send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+						wait 5 seconds
+						purge {_msg} with "vibe"
+					else:
+						if the discord name of event-emote is "heart":
+							set {_r} to role named "Fortnite" in event-guild
+							add {_r} to roles of event-member in event-guild
+							send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+							wait 5 seconds
+							purge {_msg} with "vibe"
+						else:
+							if the discord name of event-emote is "muscle":
+								set {_r} to role named "Fall guys" in event-guild
+								add {_r} to roles of event-member in event-guild
+								send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+								wait 5 seconds
+								purge {_msg} with "vibe"
+							else:
+								if the discord name of event-emote is "fire":
+									set {_r} to role named "Valorant" in event-guild
+									add {_r} to roles of event-member in event-guild
+									send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+									wait 5 seconds
+									purge {_msg} with "vibe"
+								else:
+									if the discord name of event-emote is "bomb":
+										set {_r} to role named "CS:GO" in event-guild
+										add {_r} to roles of event-member in event-guild
+										send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+										wait 5 seconds
+										purge {_msg} with "vibe"
+									else:
+										if the discord name of event-emote is "crossed_swords":
+											set {_r} to role named "MultiverSUS" in event-guild
+											add {_r} to roles of event-member in event-guild
+											send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+											wait 5 seconds
+											purge {_msg} with "vibe"
+										else:
+											if the discord name of event-emote is "cloud_snow":
+												set {_r} to role named "Overwatch" in event-guild
+												add {_r} to roles of event-member in event-guild
+												send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+												wait 5 seconds
+												purge {_msg} with "vibe"
+											else:
+												if the discord name of event-emote is "wind_blowing_face":
+													set {_r} to role named "Roblox: Winds of Fortune" in event-guild
+													add {_r} to roles of event-member in event-guild
+													send "%mention tag of event-member% You got the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+													wait 5 seconds
+													purge {_msg} with "vibe"
+
+on reaction remove:
+	if discord id of event-member is not "764563866502955059":
+		if the discord id of event-channel is {%script%::%discord id of event-guild%::reactionid}:
+			if the discord name of event-emote is "fist":
+				set {_r} to role named "Smashers" in event-guild
+				remove {_r} from roles of event-member in event-guild
+				send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+				wait 5 seconds
+				purge {_msg} with "vibe"
+			else:
+				if the discord name of event-emote is "gun":
+					set {_r} to role named "Apex Legends" in event-guild
+					remove {_r} from roles of event-member in event-guild
+					send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+					wait 5 seconds
+					purge {_msg} with "vibe"
+				else:
+					if the discord name of event-emote is "pick":
+						set {_r} to role named "Minecrafters" in event-guild
+						remove {_r} from roles of event-member in event-guild
+						send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+						wait 5 seconds
+						purge {_msg} with "vibe"
+					else:
+						if the discord name of event-emote is "heart":
+							set {_r} to role named "Fortnite" in event-guild
+							remove {_r} from roles of event-member in event-guild
+							send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+							wait 5 seconds
+							purge {_msg} with "vibe"
+						else:
+							if the discord name of event-emote is "muscle":
+								set {_r} to role named "Fall guys" in event-guild
+								remove {_r} from roles of event-member in event-guild
+								send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+								wait 5 seconds
+								purge {_msg} with "vibe"
+							else:
+								if the discord name of event-emote is "fire":
+									set {_r} to role named "Valorant" in event-guild
+									remove {_r} from roles of event-member in event-guild
+									send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+									wait 5 seconds
+									purge {_msg} with "vibe"
+								else:
+									if the discord name of event-emote is "bomb":
+										set {_r} to role named "CS:GO" in event-guild
+										remove {_r} from roles of event-member in event-guild
+										send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+										wait 5 seconds
+										purge {_msg} with "vibe"
+									else:
+										if the discord name of event-emote is "crossed_swords":
+											set {_r} to role named "MultiverSUS" in event-guild
+											remove {_r} from roles of event-member in event-guild
+											send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+											wait 5 seconds
+											purge {_msg} with "vibe"
+										else:
+											if the discord name of event-emote is "cloud_snow":
+												set {_r} to role named "Overwatch" in event-guild
+												remove {_r} from roles of event-member in event-guild
+												send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+												wait 5 seconds
+												purge {_msg} with "vibe"
+											else:
+												if the discord name of event-emote is "wind_blowing_face":
+													set {_r} to role named "Roblox: Winds of Fortune" in event-guild
+													remove {_r} from roles of event-member in event-guild
+													send "%mention tag of event-member% You lost the %discord name of {_r}% role!" to event-channel with "vibe" and store it in {_msg}
+													wait 5 seconds
+													purge {_msg} with "vibe"
+
+discord command embed <text>:
+	prefixes: "%{%script%::%discord id of event-guild%::prefix}%"
+	bots: vibe
+	trigger:
+		set {%script%::%discord id of event-guild%::reactionid} to discord id of event-channel
+		set {_smashers} to role named "Smashers"
+		set {_apexlegends} to role named "Apex Legends"
+		set {_minecrafters} to role named "Minecrafters"
+		set {_fortnite} to role named "Fortnite"
+		set {_fallguys} to role named "Fall guys"
+		set {_valorant} to role named "Valorant"
+		set {_csgo} to role named "CS:GO"
+		set {_multiversus} to role named "MultiverSUS"
+		set {_overwatch} to role named "Overwatch"
+		set {_winds} to role named "Roblox: Winds of Fortune"
+		if event-member has permission administrator:
+			if arg-1 is "roles":
+				create embed:
+					set title of embed to title with text "Self-Roles"
+					set the colour of the embed to green
+					add split field named " " with value ":fist: - %mention tag of {_smashers}%%nl%:gun: - %mention tag of {_apexlegends}%%nl%:pick: - %mention tag of {_minecrafters}%%nl%:heart: - %mention tag of {_fortnite}%%nl%:muscle: - %mention tag of {_fallguys}%%nl%:fire: - %mention tag of {_valorant}%%nl%:bomb: - %mention tag of {_csgo}%%nl%:crossed_swords: - %mention tag of {_multiversus}%%nl%:cloud_snow: - %mention tag of {_overwatch}%%nl%:wind_blowing_face: - %mention tag of {_winds}%" to embed
+					set the timestamp of embed to now
+				reply to event-message without mention and say the last created embed and store it in {_roles}
+				add reaction ":fist:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":gun:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":pick:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":heart:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":muscle:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":fire:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":bomb:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":crossed_swords:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":cloud_snow:" to {_roles} with "vibe"
+				wait 1 seconds
+				add reaction ":wind_blowing_face:" to {_roles} with "vibe"
