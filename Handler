@@ -1,7 +1,7 @@
 on skript load:
 	#create vixio bot:
 		#enable the guild members intent
-		login to "OTE0OTExMDc4MTg4NzI4MzUx.YaT7Vw.M19erm5GzP50kq_k9DWAQc8zt6c" with name "handler"
+		login to "" with name "handler"
 
 discord command embed <text>:
 	prefixes: !
