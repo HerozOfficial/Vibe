@@ -8,7 +8,7 @@ on skript load:
 		enable the guild message reactions intent
 		enable the message content intent
 		enable the direct messages intent
-		login to "NzY0NTYzODY2NTAyOTU1MDU5.X4IFlg.9ylgS5EUrSrxkpntuY7mKG0ho4k" with name "vibe"
+		login to "" with name "vibe"
 	
 function hasRole(guild: guild, member: member) :: boolean:
 	set {_id} to discord id of {_guild}
